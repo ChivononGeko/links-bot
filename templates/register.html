@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Registration</title>
+		<link rel="stylesheet" href="styles/styles.css" />
+		<script>
+			document.addEventListener('DOMContentLoaded', function () {
+				const phoneInput = document.getElementById('phone')
+				const phoneError = document.getElementById('phoneError')
+
+				// Изначально значение для поля телефона
+				phoneInput.value = '+7 '
+
+				phoneInput.addEventListener('input', function () {
+					let value = phoneInput.value.replace(/\D/g, '') // Оставляем только цифры
+					if (!value.startsWith('7')) value = '7' // Проверка на начало с +7
+					value = value.substring(0, 11) // Ограничиваем длину номера
+
+					// Форматируем номер
+					let formattedNumber = '+7 '
+					if (value.length > 1) formattedNumber += value.substring(1, 4)
+					if (value.length > 4) formattedNumber += ' ' + value.substring(4, 7)
+					if (value.length > 7) formattedNumber += ' ' + value.substring(7, 11)
+
+					phoneInput.value = formattedNumber
+
+					if (phoneInput.selectionStart < 3) {
+						phoneInput.setSelectionRange(3, 3)
+					}
+				})
+
+				phoneInput.addEventListener('keydown', function (e) {
+					if (
+						phoneInput.selectionStart <= 3 &&
+						(e.key === 'Backspace' || e.key === 'Delete')
+					) {
+						e.preventDefault()
+					}
+				})
+
+				// Проверка при сабмите формы
+				document
+					.querySelector('form')
+					.addEventListener('submit', function (event) {
+						const validCodes = [
+							'700',
+							'708',
+							'705',
+							'771',
+							'776',
+							'777',
+							'707',
+							'747',
+							'701',
+							'702',
+							'775',
+							'778',
+							'706',
+						]
+
+						const phonePattern = /^\+7 (\d{3}) \d{3} \d{4}$/
+
+						if (!phonePattern.test(phoneInput.value)) {
+							phoneError.style.display = 'block' // Показываем ошибку
+							phoneError.textContent = 'Неверный формат телефона!'
+							event.preventDefault() // Останавливаем отправку формы
+
+							// Скрываем ошибку через 5 секунд
+							setTimeout(function () {
+								phoneError.style.display = 'none'
+							}, 5000)
+						} else {
+							const code = phoneInput.value.substring(3, 6) // Извлекаем код оператора
+							if (!validCodes.includes(code)) {
+								phoneError.style.display = 'block' // Показываем ошибку
+								phoneError.textContent = 'Неверный код оператора!'
+								event.preventDefault() // Останавливаем отправку формы
+
+								// Скрываем ошибку через 5 секунд
+								setTimeout(function () {
+									phoneError.style.display = 'none'
+								}, 5000)
+							} else {
+								phoneError.style.display = 'none' // Скрываем ошибку, если все хорошо
+							}
+						}
+					})
+			})
+		</script>
+	</head>
+	<body>
+		<div class="container">
+			<img src="styles/logo.webp" alt="Logo" class="logo" />
+
+			<h2>Registration Form</h2>
+			<form method="POST" action="/submit">
+				<div class="form-group">
+					<label for="name">Name:</label>
+					<input type="text" id="name" name="name" required />
+				</div>
+
+				<div class="form-group">
+					<label for="phone">Phone:</label>
+					<input
+						type="tel"
+						id="phone"
+						name="phone"
+						inputmode="numeric"
+						required
+					/>
+				</div>
+
+				<div id="phoneError" class="error"></div>
+
+				<div class="form-group">
+					<label for="birthday">Birthday:</label>
+					<input type="date" id="birthday" name="birthday" required />
+				</div>
+
+				<input type="hidden" name="token" value="{{.Token}}" />
+
+				<input type="submit" value="Submit" />
+			</form>
+		</div>
+	</body>
+</html>
